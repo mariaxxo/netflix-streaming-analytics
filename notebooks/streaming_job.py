@@ -6,12 +6,12 @@ spark = SparkSession.builder.getOrCreate()
 
 schema = StructType() \
     .add("user_id", StringType()) \
-    .add("movie_id", StringType()) \
+    .add("movie_title", StringType()) \
     .add("timestamp", TimestampType()) \
     .add("country", StringType()) \
     .add("genre", StringType()) \
     .add("watch_time", IntegerType()) \
-    .add("popularity", IntegerType())
+    .add("rating", IntegerType())
 
 df = spark.readStream.format("eventhubs") \
     .option("eventhubs.connectionString", "<EVENTHUB_CONN_STR>") \
