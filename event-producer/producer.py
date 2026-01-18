@@ -5,10 +5,11 @@ from dotenv import load_dotenv
 from datetime import datetime
 import random
 import json
+import time
 
 load_dotenv()  # wczytuje secrets z .env
 
-df = pd.read_excel("../data/netflix_sample.xlsx")  # Twój dataset filmów
+df = pd.read_csv("../data/sample_netflix1.csv")
 
 connection_str = os.getenv("EVENTHUB_CONN_STR")
 eventhub_name = os.getenv("EVENTHUB_NAME")
@@ -17,26 +18,32 @@ producer = EventHubProducerClient.from_connection_string(
     conn_str=connection_str, eventhub_name=eventhub_name
 )
 
+trending_genres = ["Action", "Comedy", "Drama"]
+
 with producer:
-    batch = producer.create_batch()
-    for i, row in df.iterrows():
-        user_id = f"user_{random.randint(1,200)}"
-        ts = datetime.now() - pd.to_timedelta(random.randint(0, 24*60), unit='m')
-        country = random.choice(["US", "UK", "FR", "DE", "PL"])
-        max_duration = row.get("duration", 120)  
-        watch_time = random.randint(5, max_duration)
+    print("Rozpoczynam symulację ruchu użytkowników...")
+    
+    for _ in range(1000):
+        random_row = df.sample(n=1).iloc[0]
         
-        data = {
-            "user_id": user_id,
-            "movie_title": row["title"],  
-            "timestamp": ts.isoformat(),
-            "country": country,
-            "genre": row["genre"],
-            "watch_time": watch_time,
-            "rating": row["rating"]
+        genre = str(random_row["genre"]).split(',')[0].strip()
+        if random.random() > 0.7: 
+            genre = random.choice(trending_genres)
+        
+        event = {
+            "user_id": f"user_{random.randint(1, 100)}", 
+            "movie_title": str(random_row["title"]),
+            "timestamp": datetime.now().isoformat(),
+            "country": random.choice(["PL", "US", "UK"]),
+            "genre": genre,
+            "watch_time": random.randint(1, 120),
+            "rating": str(random_row["rating"])
         }
         
-        batch.add(EventData(json.dumps(data)))
-    producer.send_batch(batch)
+        batch = producer.create_batch()
+        batch.add(EventData(json.dumps(event)))
+        producer.send_batch(batch)
+        
+        time.sleep(0.1)
 
 print("Events sent!")
