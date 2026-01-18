@@ -1,7 +1,7 @@
 # netflix-streaming-analytics
 
 Zespół: Maria Bielawa, Milena Dziepak
-Temat: Strumieniowa analiza aktywności użytkowników Netflixa
+Temat: Strumieniowa analiza preferencji użytkowników platformy Netflix
 
 ---Technologie---
 Ingest: Azure Event Hubs
@@ -14,13 +14,16 @@ Dashboard: PowerBI
 --Instrukcja--
 1. Lokalne testy w języku Python
    python -m venv venv
+   
    venv\Scripts\activate
+   
    pip install -r requirements.txt
 
    python /notebooks/streaming_job.py
+   
    python /event-producer/producer.py
 
-2. W chmurze
+3. W chmurze
    cd iac
    terraform init
    terraform apply
